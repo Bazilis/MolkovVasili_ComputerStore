@@ -6,9 +6,9 @@ namespace ComputerStore.BLL.Interfaces.CategoryCharacteristics.Double
 {
     public interface ICategoryCharacteristicDoubleService
     {
-        Task<List<CategoryCharacteristicDoubleDto>> GetAllCategoryCharacteristicsDoubleByProductCategoryIdAsync(int productId);
+        Task<IEnumerable<CategoryCharacteristicDoubleDto>> GetAllCategoryCharacteristicsDoubleByProductCategoryIdAsync(int productId);
 
-        Task<List<CategoryCharacteristicDoubleDto>> GetAllAsync();
+        Task<IEnumerable<CategoryCharacteristicDoubleDto>> GetAllAsync();
 
         Task<CategoryCharacteristicDoubleDto> GetByIdAsync(int itemId);
 

@@ -2,7 +2,7 @@
 
 namespace ComputerStore.BLL.Models.CategoryCharacteristics.Double
 {
-    public class CategoryCharacteristicListDoubleDto
+    public class CategoryCharacteristicDoubleListDto
     {
         public string Name { get; set; }
         public string Dimension { get; set; }

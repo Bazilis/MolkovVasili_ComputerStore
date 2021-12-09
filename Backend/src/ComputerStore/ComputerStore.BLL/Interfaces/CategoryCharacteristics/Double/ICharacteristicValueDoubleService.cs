@@ -6,13 +6,13 @@ namespace ComputerStore.BLL.Interfaces.CategoryCharacteristics.Double
 {
     public interface ICharacteristicValueDoubleService
     {
-        //Task<List<CharacteristicValueDoubleDto>> GetAllCharacteristicValuesDoubleByProductIdAsync(int productId);
+        Task<IEnumerable<CharacteristicValueDoubleDto>> GetAllCharacteristicValuesDoubleByCategoryCharacteristicDoubleIdAsync(int categoryCharacteristicDoubleId);
 
-        Task<List<CharacteristicValueDoubleDto>> GetAllCharacteristicValuesDoubleByCategoryCharacteristicDoubleIdAsync(int categoryCharacteristicDoubleId);
-
-        Task<List<CharacteristicValueDoubleDto>> GetAllAsync();
+        Task<IEnumerable<CharacteristicValueDoubleDto>> GetAllAsync();
 
         Task<CharacteristicValueDoubleDto> GetByIdAsync(int itemId);
+
+        Task<CharacteristicValueDoubleDto> GetByValueDoubleAndCharacteristicIdAsync(double value, int id);
 
         Task<CharacteristicValueDoubleDto> CreateAsync(CharacteristicValueDoubleDto item);
 

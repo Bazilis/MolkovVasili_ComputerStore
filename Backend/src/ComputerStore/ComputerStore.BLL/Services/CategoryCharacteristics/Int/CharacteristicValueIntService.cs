@@ -25,12 +25,11 @@ namespace ComputerStore.BLL.Services.CategoryCharacteristics.Int
             _validator = validator;
         }
 
-        public async Task<List<CharacteristicValueIntDto>> GetAllCharacteristicValuesIntByCategoryCharacteristicIntIdAsync(int categoryCharacteristicIntId)
+        public async Task<IEnumerable<CharacteristicValueIntDto>> GetAllCharacteristicValuesIntByCategoryCharacteristicIntIdAsync(int categoryCharacteristicIntId)
         {
             var entitiesResult = await _repository.GetAll()
                 .Where(cv => cv.CategoryCharacteristicIntId == categoryCharacteristicIntId)
                 .OrderBy(cv => cv.ValueInt)
-                .Select(cv => cv.ValueInt)
                 .ToListAsync();
 
             if (entitiesResult == null)
@@ -39,10 +38,10 @@ namespace ComputerStore.BLL.Services.CategoryCharacteristics.Int
                                                  $"with CategoryCharacteristicIntId {categoryCharacteristicIntId} in Database");
             }
 
-            return entitiesResult.Adapt<List<CharacteristicValueIntDto>>();
+            return entitiesResult.Adapt<IEnumerable<CharacteristicValueIntDto>>();
         }
 
-        public async Task<List<CharacteristicValueIntDto>> GetAllAsync()
+        public async Task<IEnumerable<CharacteristicValueIntDto>> GetAllAsync()
         {
             var entitiesResult = await _repository.GetAll()
                 .OrderBy(cv => cv.ValueInt)
@@ -53,7 +52,7 @@ namespace ComputerStore.BLL.Services.CategoryCharacteristics.Int
                 throw new NullReferenceException("There is no CharacteristicValueInt entities in Database");
             }
 
-            return entitiesResult.Adapt<List<CharacteristicValueIntDto>>();
+            return entitiesResult.Adapt<IEnumerable<CharacteristicValueIntDto>>();
         }
 
         public async Task<CharacteristicValueIntDto> GetByIdAsync(int itemId)
@@ -67,6 +66,16 @@ namespace ComputerStore.BLL.Services.CategoryCharacteristics.Int
             }
 
             return entityResult.Adapt<CharacteristicValueIntDto>();
+        }
+
+        public async Task<CharacteristicValueIntDto> GetByValueIntAndCharacteristicIdAsync(int value, int id)
+        {
+            var entityResult = await _repository.GetAll()
+                .FirstOrDefaultAsync(x =>
+                    x.ValueInt == value &&
+                    x.CategoryCharacteristicIntId == id);
+
+            return entityResult?.Adapt<CharacteristicValueIntDto>();
         }
 
         public async Task<CharacteristicValueIntDto> CreateAsync(CharacteristicValueIntDto item)

@@ -97,20 +97,10 @@ namespace ComputerStore.BLL.Services
                 ProductCategoryId = productEntity.ProductCategoryId
             };
 
-            var categoryCharacteristicDoubleDtoList =
-                await _categoryCharacteristicDoubleService.GetAllCategoryCharacteristicsDoubleByProductCategoryIdAsync(
-                    productEntity.ProductCategoryId);
-
             foreach (var characteristicValueDoubleEntity in productEntity.CategoryCharacteristicsDouble)
             {
-                var categoryCharacteristicDoubleDto = categoryCharacteristicDoubleDtoList
-                    .Find(x =>x.Id == characteristicValueDoubleEntity.CategoryCharacteristicDoubleId);
-
-                if (categoryCharacteristicDoubleDto == null)
-                {
-                    throw new NullReferenceException("CategoryCharacteristicDouble with Id " +
-                                                     $"{characteristicValueDoubleEntity.CategoryCharacteristicDoubleId} not found in Database");
-                }
+                var categoryCharacteristicDoubleDto = await _categoryCharacteristicDoubleService
+                    .GetByIdAsync(characteristicValueDoubleEntity.CategoryCharacteristicDoubleId);
 
                 var productCharacteristicDoubleDto = categoryCharacteristicDoubleDto.Adapt<ProductCharacteristicDoubleDto>();
 
@@ -124,20 +114,10 @@ namespace ComputerStore.BLL.Services
                                           productCharacteristicDoubleDto.Dimension;
             }
 
-            var categoryCharacteristicIntDtoList =
-                await _categoryCharacteristicIntService.GetAllCategoryCharacteristicsIntByProductCategoryIdAsync(
-                    productEntity.ProductCategoryId);
-
             foreach (var characteristicValueIntEntity in productEntity.CategoryCharacteristicsInt)
             {
-                var categoryCharacteristicIntDto = categoryCharacteristicIntDtoList
-                    .Find(x => x.Id == characteristicValueIntEntity.CategoryCharacteristicIntId);
-
-                if (categoryCharacteristicIntDto == null)
-                {
-                    throw new NullReferenceException("CategoryCharacteristicInt with Id " +
-                                                     $"{characteristicValueIntEntity.CategoryCharacteristicIntId} not found in Database");
-                }
+                var categoryCharacteristicIntDto = await _categoryCharacteristicIntService
+                    .GetByIdAsync(characteristicValueIntEntity.CategoryCharacteristicIntId);
 
                 var productCharacteristicIntDto = categoryCharacteristicIntDto.Adapt<ProductCharacteristicIntDto>();
 
@@ -151,20 +131,10 @@ namespace ComputerStore.BLL.Services
                                           productCharacteristicIntDto.Dimension;
             }
 
-            var categoryCharacteristicStringDtoList =
-                await _categoryCharacteristicStringService.GetAllCategoryCharacteristicsStringByProductCategoryIdAsync(
-                    productEntity.ProductCategoryId);
-
             foreach (var characteristicValueStringEntity in productEntity.CategoryCharacteristicsString)
             {
-                var categoryCharacteristicStringDto = categoryCharacteristicStringDtoList
-                    .Find(x => x.Id == characteristicValueStringEntity.CategoryCharacteristicStringId);
-
-                if (categoryCharacteristicStringDto == null)
-                {
-                    throw new NullReferenceException("CategoryCharacteristicString with Id " +
-                                                     $"{characteristicValueStringEntity.CategoryCharacteristicStringId} not found in Database");
-                }
+                var categoryCharacteristicStringDto = await _categoryCharacteristicStringService
+                    .GetByIdAsync(characteristicValueStringEntity.CategoryCharacteristicStringId);
 
                 var productCharacteristicStringDto = categoryCharacteristicStringDto.Adapt<ProductCharacteristicStringDto>();
 
@@ -197,142 +167,91 @@ namespace ComputerStore.BLL.Services
                 ProductCategoryId = item.ProductCategoryId
             };
 
-            var categoryCharacteristicDoubleDtoList =
-                await _categoryCharacteristicDoubleService.GetAllCategoryCharacteristicsDoubleByProductCategoryIdAsync(
-                    productEntity.ProductCategoryId);
-
             foreach (var productCharacteristicDoubleDto in item.ProductCharacteristicsDouble)
             {
-                if (!categoryCharacteristicDoubleDtoList.Exists(x => x.Id == productCharacteristicDoubleDto.Id))
-                {
-                    var categoryCharacteristicDoubleDto = productCharacteristicDoubleDto.Adapt<CategoryCharacteristicDoubleDto>();
-
-                    var categoryWithUpdatedId = await _categoryCharacteristicDoubleService.CreateAsync(categoryCharacteristicDoubleDto);
-
-                    var characteristicValueDoubleDto = new CharacteristicValueDoubleDto
-                    {
-                        ValueDouble = productCharacteristicDoubleDto.CharacteristicValueDouble,
-                        CategoryCharacteristicDoubleId = categoryWithUpdatedId.Id
-                    };
-
-                    var characteristicWithUpdatedId = await _characteristicValueDoubleService.CreateAsync(characteristicValueDoubleDto);
-
-                    var characteristicValueDoubleEntity = characteristicWithUpdatedId.Adapt<CharacteristicValueDoubleEntity>();
-
-                    productEntity.CategoryCharacteristicsDouble.Add(characteristicValueDoubleEntity);
-                }
-
-                var characteristicValueDoubleList =
+                var characteristicValueDoubleDto =
                     await _characteristicValueDoubleService
-                        .GetAllCharacteristicValuesDoubleByCategoryCharacteristicDoubleIdAsync(productCharacteristicDoubleDto.Id);
+                        .GetByValueDoubleAndCharacteristicIdAsync(
+                            productCharacteristicDoubleDto.CharacteristicValueDouble,
+                            productCharacteristicDoubleDto.Id);
 
-                if (!characteristicValueDoubleList.Exists(x =>
-                    x.ValueDouble == productCharacteristicDoubleDto.CharacteristicValueDouble))
+                if (characteristicValueDoubleDto == null)
                 {
-                    var characteristicValueDoubleDto = new CharacteristicValueDoubleDto
+                    var characteristicValueDoubleDtoNew = new CharacteristicValueDoubleDto
                     {
                         ValueDouble = productCharacteristicDoubleDto.CharacteristicValueDouble,
                         CategoryCharacteristicDoubleId = productCharacteristicDoubleDto.Id
                     };
 
-                    var characteristicWithUpdatedId = await _characteristicValueDoubleService.CreateAsync(characteristicValueDoubleDto);
+                    var characteristicWithUpdatedId = await _characteristicValueDoubleService
+                        .CreateAsync(characteristicValueDoubleDtoNew);
 
                     var characteristicValueDoubleEntity = characteristicWithUpdatedId.Adapt<CharacteristicValueDoubleEntity>();
 
                     productEntity.CategoryCharacteristicsDouble.Add(characteristicValueDoubleEntity);
                 }
-            }
 
-            var categoryCharacteristicIntDtoList =
-                await _categoryCharacteristicIntService.GetAllCategoryCharacteristicsIntByProductCategoryIdAsync(
-                    productEntity.ProductCategoryId);
+                var characteristicValueDoubleEntity2 = characteristicValueDoubleDto.Adapt<CharacteristicValueDoubleEntity>();
+
+                productEntity.CategoryCharacteristicsDouble.Add(characteristicValueDoubleEntity2);
+            }
 
             foreach (var productCharacteristicIntDto in item.ProductCharacteristicsInt)
             {
-                if (!categoryCharacteristicIntDtoList.Exists(x => x.Id == productCharacteristicIntDto.Id))
+                var characteristicValueIntDto =
+                    await _characteristicValueIntService
+                        .GetByValueIntAndCharacteristicIdAsync(
+                            productCharacteristicIntDto.CharacteristicValueInt,
+                            productCharacteristicIntDto.Id);
+
+                if (characteristicValueIntDto == null)
                 {
-                    var categoryCharacteristicIntDto = productCharacteristicIntDto.Adapt<CategoryCharacteristicIntDto>();
-
-                    var categoryWithUpdatedId = await _categoryCharacteristicIntService.CreateAsync(categoryCharacteristicIntDto);
-
-                    var characteristicValueIntDto = new CharacteristicValueIntDto
+                    var characteristicValueIntDtoNew = new CharacteristicValueIntDto
                     {
                         ValueInt = productCharacteristicIntDto.CharacteristicValueInt,
-                        CategoryCharacteristicIntId = categoryWithUpdatedId.Id
+                        CategoryCharacteristicIntId = productCharacteristicIntDto.Id
                     };
 
-                    var characteristicWithUpdatedId = await _characteristicValueIntService.CreateAsync(characteristicValueIntDto);
+                    var characteristicWithUpdatedId = await _characteristicValueIntService
+                        .CreateAsync(characteristicValueIntDtoNew);
 
                     var characteristicValueIntEntity = characteristicWithUpdatedId.Adapt<CharacteristicValueIntEntity>();
 
                     productEntity.CategoryCharacteristicsInt.Add(characteristicValueIntEntity);
                 }
 
-                var characteristicValueIntList =
-                    await _characteristicValueIntService
-                        .GetAllCharacteristicValuesIntByCategoryCharacteristicIntIdAsync(productCharacteristicIntDto.Id);
+                var characteristicValueIntEntity2 = characteristicValueIntDto.Adapt<CharacteristicValueIntEntity>();
 
-                if (!characteristicValueIntList.Exists(x =>
-                    x.ValueInt == productCharacteristicIntDto.CharacteristicValueInt))
-                {
-                    var characteristicValueIntDto2 = new CharacteristicValueIntDto
-                    {
-                        ValueInt = productCharacteristicIntDto.CharacteristicValueInt,
-                        CategoryCharacteristicIntId = productCharacteristicIntDto.Id
-                    };
-
-                    var characteristicWithUpdatedId2 = await _characteristicValueIntService.CreateAsync(characteristicValueIntDto2);
-
-                    var characteristicValueIntEntity2 = characteristicWithUpdatedId2.Adapt<CharacteristicValueIntEntity>();
-
-                    productEntity.CategoryCharacteristicsInt.Add(characteristicValueIntEntity2);
-                }
+                productEntity.CategoryCharacteristicsInt.Add(characteristicValueIntEntity2);
             }
-
-            var categoryCharacteristicStringDtoList =
-                await _categoryCharacteristicStringService.GetAllCategoryCharacteristicsStringByProductCategoryIdAsync(
-                    productEntity.ProductCategoryId);
 
             foreach (var productCharacteristicStringDto in item.ProductCharacteristicsString)
             {
-                if (!categoryCharacteristicStringDtoList.Exists(x => x.Id == productCharacteristicStringDto.Id))
-                {
-                    var categoryCharacteristicStringDto = productCharacteristicStringDto.Adapt<CategoryCharacteristicStringDto>();
-
-                    var categoryWithUpdatedId = await _categoryCharacteristicStringService.CreateAsync(categoryCharacteristicStringDto);
-
-                    var characteristicValueStringDto = new CharacteristicValueStringDto
-                    {
-                        ValueString = productCharacteristicStringDto.CharacteristicValueString,
-                        CategoryCharacteristicStringId = categoryWithUpdatedId.Id
-                    };
-
-                    var characteristicWithUpdatedId = await _characteristicValueStringService.CreateAsync(characteristicValueStringDto);
-
-                    var characteristicValueStringEntity = characteristicWithUpdatedId.Adapt<CharacteristicValueStringEntity>();
-
-                    productEntity.CategoryCharacteristicsString.Add(characteristicValueStringEntity);
-                }
-
-                var characteristicValueStringList =
+                var characteristicValueStringDto =
                     await _characteristicValueStringService
-                        .GetAllCharacteristicValuesStringByCategoryCharacteristicStringIdAsync(productCharacteristicStringDto.Id);
+                        .GetByValueStringAndCharacteristicIdAsync(
+                            productCharacteristicStringDto.CharacteristicValueString,
+                            productCharacteristicStringDto.Id);
 
-                if (!characteristicValueStringList.Exists(x =>
-                    x.ValueString == productCharacteristicStringDto.CharacteristicValueString))
+                if (characteristicValueStringDto == null)
                 {
-                    var characteristicValueStringDto = new CharacteristicValueStringDto
+                    var characteristicValueStringDtoNew = new CharacteristicValueStringDto
                     {
                         ValueString = productCharacteristicStringDto.CharacteristicValueString,
                         CategoryCharacteristicStringId = productCharacteristicStringDto.Id
                     };
 
-                    var characteristicWithUpdatedId = await _characteristicValueStringService.CreateAsync(characteristicValueStringDto);
+                    var characteristicWithUpdatedId = await _characteristicValueStringService
+                        .CreateAsync(characteristicValueStringDtoNew);
 
                     var characteristicValueStringEntity = characteristicWithUpdatedId.Adapt<CharacteristicValueStringEntity>();
 
                     productEntity.CategoryCharacteristicsString.Add(characteristicValueStringEntity);
                 }
+
+                var characteristicValueStringEntity2 = characteristicValueStringDto.Adapt<CharacteristicValueStringEntity>();
+
+                productEntity.CategoryCharacteristicsString.Add(characteristicValueStringEntity2);
             }
 
             var productEntityWithUpdatedId = await _productRepository.CreateAsync(productEntity);
@@ -350,41 +269,106 @@ namespace ComputerStore.BLL.Services
                 throw new ValidationException(validationResult.Errors);
             }
 
-            var productEntity = new ProductEntity
+            ProductEntity productEntity = await _productRepository.GetByIdAsync(item.Id);
+
+            if (productEntity == null)
             {
-                Id = item.Id,
-                Name = item.Name,
-                Price = item.Price,
-                QuantityInStorage = item.QuantityInStorage,
-                ProductCategoryId = item.ProductCategoryId
-            };
+                throw new NullReferenceException($"Product entity with Id {item.Id} not found in Database");
+            }
+
+            productEntity.Name = item.Name;
+            productEntity.Price = item.Price;
+            productEntity.QuantityInStorage = item.QuantityInStorage;
+            productEntity.ProductCategoryId = item.ProductCategoryId;
 
             foreach (var productCharacteristicDoubleDto in item.ProductCharacteristicsDouble)
             {
-                var characteristicValueDoubleList =
+                var characteristicValueDoubleDto =
                     await _characteristicValueDoubleService
-                        .GetAllCharacteristicValuesDoubleByCategoryCharacteristicDoubleIdAsync(productCharacteristicDoubleDto.Id);
+                        .GetByValueDoubleAndCharacteristicIdAsync(
+                            productCharacteristicDoubleDto.CharacteristicValueDouble,
+                            productCharacteristicDoubleDto.Id);
 
-                if (!characteristicValueDoubleList.Exists(x =>
-                    x.ValueDouble == productCharacteristicDoubleDto.CharacteristicValueDouble))
+                if (characteristicValueDoubleDto == null)
                 {
-                    var characteristicValueDoubleDto = new CharacteristicValueDoubleDto
+                    var characteristicValueDoubleDtoNew = new CharacteristicValueDoubleDto
                     {
                         ValueDouble = productCharacteristicDoubleDto.CharacteristicValueDouble,
                         CategoryCharacteristicDoubleId = productCharacteristicDoubleDto.Id
                     };
 
-                    var characteristicWithUpdatedId = await _characteristicValueDoubleService.CreateAsync(characteristicValueDoubleDto);
+                    var characteristicWithUpdatedId = await _characteristicValueDoubleService
+                        .CreateAsync(characteristicValueDoubleDtoNew);
 
                     var characteristicValueDoubleEntity = characteristicWithUpdatedId.Adapt<CharacteristicValueDoubleEntity>();
 
                     productEntity.CategoryCharacteristicsDouble.Add(characteristicValueDoubleEntity);
                 }
+
+                var characteristicValueDoubleEntity2 = characteristicValueDoubleDto.Adapt<CharacteristicValueDoubleEntity>();
+
+                productEntity.CategoryCharacteristicsDouble.Add(characteristicValueDoubleEntity2);
             }
 
-            //var entityForUpdate = item.Adapt<ProductEntity>();
+            foreach (var productCharacteristicIntDto in item.ProductCharacteristicsInt)
+            {
+                var characteristicValueIntDto =
+                    await _characteristicValueIntService
+                        .GetByValueIntAndCharacteristicIdAsync(
+                            productCharacteristicIntDto.CharacteristicValueInt,
+                            productCharacteristicIntDto.Id);
 
-            //await _productRepository.UpdateAsync(entityForUpdate);
+                if (characteristicValueIntDto == null)
+                {
+                    var characteristicValueIntDtoNew = new CharacteristicValueIntDto
+                    {
+                        ValueInt = productCharacteristicIntDto.CharacteristicValueInt,
+                        CategoryCharacteristicIntId = productCharacteristicIntDto.Id
+                    };
+
+                    var characteristicWithUpdatedId = await _characteristicValueIntService
+                        .CreateAsync(characteristicValueIntDtoNew);
+
+                    var characteristicValueIntEntity = characteristicWithUpdatedId.Adapt<CharacteristicValueIntEntity>();
+
+                    productEntity.CategoryCharacteristicsInt.Add(characteristicValueIntEntity);
+                }
+
+                var characteristicValueIntEntity2 = characteristicValueIntDto.Adapt<CharacteristicValueIntEntity>();
+
+                productEntity.CategoryCharacteristicsInt.Add(characteristicValueIntEntity2);
+            }
+
+            foreach (var productCharacteristicStringDto in item.ProductCharacteristicsString)
+            {
+                var characteristicValueStringDto =
+                    await _characteristicValueStringService
+                        .GetByValueStringAndCharacteristicIdAsync(
+                            productCharacteristicStringDto.CharacteristicValueString,
+                            productCharacteristicStringDto.Id);
+
+                if (characteristicValueStringDto == null)
+                {
+                    var characteristicValueStringDtoNew = new CharacteristicValueStringDto
+                    {
+                        ValueString = productCharacteristicStringDto.CharacteristicValueString,
+                        CategoryCharacteristicStringId = productCharacteristicStringDto.Id
+                    };
+
+                    var characteristicWithUpdatedId = await _characteristicValueStringService
+                        .CreateAsync(characteristicValueStringDtoNew);
+
+                    var characteristicValueStringEntity = characteristicWithUpdatedId.Adapt<CharacteristicValueStringEntity>();
+
+                    productEntity.CategoryCharacteristicsString.Add(characteristicValueStringEntity);
+                }
+
+                var characteristicValueStringEntity2 = characteristicValueStringDto.Adapt<CharacteristicValueStringEntity>();
+
+                productEntity.CategoryCharacteristicsString.Add(characteristicValueStringEntity2);
+            }
+
+            await _productRepository.UpdateAsync(productEntity);
         }
 
         public async Task DeleteAsync(int itemId)

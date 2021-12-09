@@ -25,7 +25,7 @@ namespace ComputerStore.BLL.Services.CategoryCharacteristics.String
             _validator = validator;
         }
 
-        public async Task<List<CategoryCharacteristicStringDto>> GetAllCategoryCharacteristicsStringByProductCategoryIdAsync(int productCategoryId)
+        public async Task<IEnumerable<CategoryCharacteristicStringDto>> GetAllCategoryCharacteristicsStringByProductCategoryIdAsync(int productCategoryId)
         {
             var entitiesResult = await _repository.GetAll()
                 .Where(ch => ch.ProductCategoryId == productCategoryId)
@@ -38,10 +38,10 @@ namespace ComputerStore.BLL.Services.CategoryCharacteristics.String
                                                  $"with ProductCategoryId {productCategoryId} in Database");
             }
 
-            return entitiesResult.Adapt<List<CategoryCharacteristicStringDto>>();
+            return entitiesResult.Adapt<IEnumerable<CategoryCharacteristicStringDto>>();
         }
 
-        public async Task<List<CategoryCharacteristicStringDto>> GetAllAsync()
+        public async Task<IEnumerable<CategoryCharacteristicStringDto>> GetAllAsync()
         {
             var entitiesResult = await _repository.GetAll().ToListAsync();
 
@@ -50,7 +50,7 @@ namespace ComputerStore.BLL.Services.CategoryCharacteristics.String
                 throw new NullReferenceException("There is no CategoryCharacteristicString entities in Database");
             }
 
-            return entitiesResult.Adapt<List<CategoryCharacteristicStringDto>>();
+            return entitiesResult.Adapt<IEnumerable<CategoryCharacteristicStringDto>>();
         }
 
         public async Task<CategoryCharacteristicStringDto> GetByIdAsync(int itemId)

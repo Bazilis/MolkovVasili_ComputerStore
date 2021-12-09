@@ -6,11 +6,13 @@ namespace ComputerStore.BLL.Interfaces.CategoryCharacteristics.String
 {
     public interface ICharacteristicValueStringService
     {
-        Task<List<CharacteristicValueStringDto>> GetAllCharacteristicValuesStringByCategoryCharacteristicStringIdAsync(int categoryCharacteristicStringId);
+        Task<IEnumerable<CharacteristicValueStringDto>> GetAllCharacteristicValuesStringByCategoryCharacteristicStringIdAsync(int categoryCharacteristicStringId);
 
-        Task<List<CharacteristicValueStringDto>> GetAllAsync();
+        Task<IEnumerable<CharacteristicValueStringDto>> GetAllAsync();
 
         Task<CharacteristicValueStringDto> GetByIdAsync(int itemId);
+
+        Task<CharacteristicValueStringDto> GetByValueStringAndCharacteristicIdAsync(string value, int id);
 
         Task<CharacteristicValueStringDto> CreateAsync(CharacteristicValueStringDto item);
 

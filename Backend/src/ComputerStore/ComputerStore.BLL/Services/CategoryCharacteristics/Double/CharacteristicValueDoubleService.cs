@@ -25,7 +25,7 @@ namespace ComputerStore.BLL.Services.CategoryCharacteristics.Double
             _validator = validator;
         }
 
-        public async Task<List<CharacteristicValueDoubleDto>> GetAllCharacteristicValuesDoubleByCategoryCharacteristicDoubleIdAsync(int categoryCharacteristicDoubleId)
+        public async Task<IEnumerable<CharacteristicValueDoubleDto>> GetAllCharacteristicValuesDoubleByCategoryCharacteristicDoubleIdAsync(int categoryCharacteristicDoubleId)
         {
             var entitiesResult = await _repository.GetAll()
                 .Where(cv => cv.CategoryCharacteristicDoubleId == categoryCharacteristicDoubleId)
@@ -38,10 +38,10 @@ namespace ComputerStore.BLL.Services.CategoryCharacteristics.Double
                                                  $"with CategoryCharacteristicDoubleId {categoryCharacteristicDoubleId} in Database");
             }
 
-            return entitiesResult.Adapt<List<CharacteristicValueDoubleDto>>();
+            return entitiesResult.Adapt<IEnumerable<CharacteristicValueDoubleDto>>();
         }
 
-        public async Task<List<CharacteristicValueDoubleDto>> GetAllAsync()
+        public async Task<IEnumerable<CharacteristicValueDoubleDto>> GetAllAsync()
         {
             var entitiesResult = await _repository.GetAll()
                 .OrderBy(cv => cv.ValueDouble)
@@ -52,7 +52,7 @@ namespace ComputerStore.BLL.Services.CategoryCharacteristics.Double
                 throw new NullReferenceException("There is no CharacteristicValueDouble entities in Database");
             }
 
-            return entitiesResult.Adapt<List<CharacteristicValueDoubleDto>>();
+            return entitiesResult.Adapt<IEnumerable<CharacteristicValueDoubleDto>>();
         }
 
         public async Task<CharacteristicValueDoubleDto> GetByIdAsync(int itemId)
@@ -65,7 +65,29 @@ namespace ComputerStore.BLL.Services.CategoryCharacteristics.Double
                                                  $"with Id {itemId} not found in Database");
             }
 
-            return entityResult.Adapt<CharacteristicValueDoubleDto>();
+            var productDto = new CharacteristicValueDoubleDto
+            {
+                Id = entityResult.Id,
+                ValueDouble = entityResult.ValueDouble,
+                CategoryCharacteristicDoubleId = entityResult.CategoryCharacteristicDoubleId
+            };
+
+            foreach (var productEntity in entityResult.Products)
+            {
+                productDto.ProductIds.Add(productEntity.Id);
+            }
+
+            return productDto;
+        }
+
+        public async Task<CharacteristicValueDoubleDto> GetByValueDoubleAndCharacteristicIdAsync(double value, int id)
+        {
+            var entityResult = await _repository.GetAll()
+                .FirstOrDefaultAsync(x =>
+                    Math.Abs(x.ValueDouble - value) <= 0.001 &&
+                    x.CategoryCharacteristicDoubleId == id);
+
+            return entityResult?.Adapt<CharacteristicValueDoubleDto>();
         }
 
         public async Task<CharacteristicValueDoubleDto> CreateAsync(CharacteristicValueDoubleDto item)

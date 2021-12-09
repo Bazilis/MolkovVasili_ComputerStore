@@ -6,9 +6,9 @@ namespace ComputerStore.BLL.Interfaces.CategoryCharacteristics.Int
 {
     public interface ICategoryCharacteristicIntService
     {
-        Task<List<CategoryCharacteristicIntDto>> GetAllCategoryCharacteristicsIntByProductCategoryIdAsync(int productId);
+        Task<IEnumerable<CategoryCharacteristicIntDto>> GetAllCategoryCharacteristicsIntByProductCategoryIdAsync(int productId);
 
-        Task<List<CategoryCharacteristicIntDto>> GetAllAsync();
+        Task<IEnumerable<CategoryCharacteristicIntDto>> GetAllAsync();
 
         Task<CategoryCharacteristicIntDto> GetByIdAsync(int itemId);
 
