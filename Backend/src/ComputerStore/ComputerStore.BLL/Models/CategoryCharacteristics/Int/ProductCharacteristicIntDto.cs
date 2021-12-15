@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace ComputerStore.BLL.Models.CategoryCharacteristics.Int
+﻿namespace ComputerStore.BLL.Models.CategoryCharacteristics.Int
 {
     public class ProductCharacteristicIntDto
     {

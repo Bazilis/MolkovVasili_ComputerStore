@@ -1,4 +1,5 @@
-﻿using ComputerStore.BLL.Interfaces.CategoryCharacteristics.Double;
+﻿using ComputerStore.BLL.Interfaces;
+using ComputerStore.BLL.Interfaces.CategoryCharacteristics.Double;
 using ComputerStore.BLL.Interfaces.CategoryCharacteristics.Int;
 using ComputerStore.BLL.Interfaces.CategoryCharacteristics.String;
 using ComputerStore.BLL.Models;
@@ -20,38 +21,38 @@ using System.Threading.Tasks;
 
 namespace ComputerStore.BLL.Services
 {
-    public class ProductService
+    public class ProductService : IProductService
     {
         private readonly ICategoryCharacteristicDoubleService _categoryCharacteristicDoubleService;
-        private readonly ICharacteristicValueDoubleService _characteristicValueDoubleService;
         private readonly ICategoryCharacteristicIntService _categoryCharacteristicIntService;
-        private readonly ICharacteristicValueIntService _characteristicValueIntService;
         private readonly ICategoryCharacteristicStringService _categoryCharacteristicStringService;
-        private readonly ICharacteristicValueStringService _characteristicValueStringService;
 
-        private readonly IGenericRepository<ProductEntity> _productRepository;
+        private readonly ICharacteristicValueDoubleRepository _characteristicValueDoubleRepository;
+        private readonly ICharacteristicValueIntRepository _characteristicValueIntRepository;
+        private readonly ICharacteristicValueStringRepository _characteristicValueStringRepository;
+        private readonly IProductRepository _productRepository;
         private readonly IValidator<ProductDto> _productValidator;
 
         public ProductService(ICategoryCharacteristicDoubleService categoryCharacteristicDoubleService,
-            ICharacteristicValueDoubleService characteristicValueDoubleService,
             ICategoryCharacteristicIntService categoryCharacteristicIntService,
-            ICharacteristicValueIntService characteristicValueIntService,
             ICategoryCharacteristicStringService categoryCharacteristicStringService,
-            ICharacteristicValueStringService characteristicValueStringService,
-            IGenericRepository<ProductEntity> productRepository,
-            IValidator<ProductDto> productValidator)
+            IProductRepository productRepository,
+            IValidator<ProductDto> productValidator,
+            ICharacteristicValueDoubleRepository characteristicValueDoubleRepository,
+            ICharacteristicValueIntRepository characteristicValueIntRepository,
+            ICharacteristicValueStringRepository characteristicValueStringRepository)
         {
             _categoryCharacteristicDoubleService = categoryCharacteristicDoubleService;
-            _characteristicValueDoubleService = characteristicValueDoubleService;
             _categoryCharacteristicIntService = categoryCharacteristicIntService;
-            _characteristicValueIntService = characteristicValueIntService;
             _categoryCharacteristicStringService = categoryCharacteristicStringService;
-            _characteristicValueStringService = characteristicValueStringService;
             _productRepository = productRepository;
             _productValidator = productValidator;
+            _characteristicValueDoubleRepository = characteristicValueDoubleRepository;
+            _characteristicValueIntRepository = characteristicValueIntRepository;
+            _characteristicValueStringRepository = characteristicValueStringRepository;
         }
 
-        public async Task<List<ProductDto>> GetAllProductsByProductCategoryIdAsync(int productCategoryId)
+        public async Task<IEnumerable<ProductDto>> GetAllProductsByProductCategoryIdAsync(int productCategoryId)
         {
             var entitiesResult = await _productRepository.GetAll()
                 .Where(ch => ch.ProductCategoryId == productCategoryId)
@@ -64,7 +65,7 @@ namespace ComputerStore.BLL.Services
                                                  $"with ProductCategoryId {productCategoryId} in Database");
             }
 
-            return entitiesResult.Adapt<List<ProductDto>>();
+            return entitiesResult.Adapt<IEnumerable<ProductDto>>();
         }
 
         public async Task<IEnumerable<ProductDto>> GetAllAsync()
@@ -79,9 +80,9 @@ namespace ComputerStore.BLL.Services
             return entitiesResult.Adapt<IEnumerable<ProductDto>>();
         }
 
-        public async Task<ProductDto> GetByIdAsync(int itemId)
+        public async Task<ProductDto> GetByIdWithAllCharacteristicsAsync(int itemId)
         {
-            ProductEntity productEntity = await _productRepository.GetByIdAsync(itemId);
+            ProductEntity productEntity = await _productRepository.GetByIdWithAllCharacteristicsAsync(itemId);
 
             if (productEntity == null)
             {
@@ -151,6 +152,27 @@ namespace ComputerStore.BLL.Services
             return productDto;
         }
 
+        public async Task<ProductDto> GetByIdAsync(int itemId)
+        {
+            ProductEntity productEntity = await _productRepository.GetByIdAsync(itemId);
+
+            if (productEntity == null)
+            {
+                throw new NullReferenceException($"Product entity with Id {itemId} not found in Database");
+            }
+
+            var productDto = new ProductDto
+            {
+                Id = productEntity.Id,
+                Name = productEntity.Name,
+                Price = productEntity.Price,
+                QuantityInStorage = productEntity.QuantityInStorage,
+                ProductCategoryId = productEntity.ProductCategoryId
+            };
+
+            return productDto;
+        }
+
         public async Task<ProductDto> CreateAsync(ProductDto item)
         {
             var validationResult = await _productValidator.ValidateAsync(item);
@@ -167,96 +189,90 @@ namespace ComputerStore.BLL.Services
                 ProductCategoryId = item.ProductCategoryId
             };
 
+            productEntity = await _productRepository.CreateAsync(productEntity);
+
+            item.Id = productEntity.Id;
+
             foreach (var productCharacteristicDoubleDto in item.ProductCharacteristicsDouble)
             {
-                var characteristicValueDoubleDto =
-                    await _characteristicValueDoubleService
-                        .GetByValueDoubleAndCharacteristicIdAsync(
-                            productCharacteristicDoubleDto.CharacteristicValueDouble,
-                            productCharacteristicDoubleDto.Id);
+                var characteristicValueDoubleEntity = await _characteristicValueDoubleRepository
+                    .GetByValueDoubleAndCharacteristicIdAsync(
+                        productCharacteristicDoubleDto.CharacteristicValueDouble,
+                        productCharacteristicDoubleDto.Id);
 
-                if (characteristicValueDoubleDto == null)
+                if (characteristicValueDoubleEntity == null)
                 {
-                    var characteristicValueDoubleDtoNew = new CharacteristicValueDoubleDto
+                    var characteristicValueDoubleEntityNew = new CharacteristicValueDoubleEntity
                     {
                         ValueDouble = productCharacteristicDoubleDto.CharacteristicValueDouble,
                         CategoryCharacteristicDoubleId = productCharacteristicDoubleDto.Id
                     };
 
-                    var characteristicWithUpdatedId = await _characteristicValueDoubleService
-                        .CreateAsync(characteristicValueDoubleDtoNew);
+                    characteristicValueDoubleEntityNew.Products.Add(productEntity);
 
-                    var characteristicValueDoubleEntity = characteristicWithUpdatedId.Adapt<CharacteristicValueDoubleEntity>();
+                    await _characteristicValueDoubleRepository
+                        .CreateAsync(characteristicValueDoubleEntityNew);
 
-                    productEntity.CategoryCharacteristicsDouble.Add(characteristicValueDoubleEntity);
+                    continue;
                 }
 
-                var characteristicValueDoubleEntity2 = characteristicValueDoubleDto.Adapt<CharacteristicValueDoubleEntity>();
-
-                productEntity.CategoryCharacteristicsDouble.Add(characteristicValueDoubleEntity2);
+                characteristicValueDoubleEntity.Products.Add(productEntity);
+                await _characteristicValueDoubleRepository.UpdateNoTrackingAsync(characteristicValueDoubleEntity);
             }
 
             foreach (var productCharacteristicIntDto in item.ProductCharacteristicsInt)
             {
-                var characteristicValueIntDto =
-                    await _characteristicValueIntService
-                        .GetByValueIntAndCharacteristicIdAsync(
-                            productCharacteristicIntDto.CharacteristicValueInt,
-                            productCharacteristicIntDto.Id);
+                var characteristicValueIntEntity =
+                    await _characteristicValueIntRepository.GetByValueIntAndCharacteristicIdAsync(
+                        productCharacteristicIntDto.CharacteristicValueInt,
+                        productCharacteristicIntDto.Id);
 
-                if (characteristicValueIntDto == null)
+                if (characteristicValueIntEntity == null)
                 {
-                    var characteristicValueIntDtoNew = new CharacteristicValueIntDto
+                    var characteristicValueIntEntityNew = new CharacteristicValueIntEntity
                     {
                         ValueInt = productCharacteristicIntDto.CharacteristicValueInt,
                         CategoryCharacteristicIntId = productCharacteristicIntDto.Id
                     };
 
-                    var characteristicWithUpdatedId = await _characteristicValueIntService
-                        .CreateAsync(characteristicValueIntDtoNew);
+                    characteristicValueIntEntityNew.Products.Add(productEntity);
 
-                    var characteristicValueIntEntity = characteristicWithUpdatedId.Adapt<CharacteristicValueIntEntity>();
+                    await _characteristicValueIntRepository
+                        .CreateAsync(characteristicValueIntEntityNew);
 
-                    productEntity.CategoryCharacteristicsInt.Add(characteristicValueIntEntity);
+                    continue;
                 }
 
-                var characteristicValueIntEntity2 = characteristicValueIntDto.Adapt<CharacteristicValueIntEntity>();
-
-                productEntity.CategoryCharacteristicsInt.Add(characteristicValueIntEntity2);
+                characteristicValueIntEntity.Products.Add(productEntity);
+                await _characteristicValueIntRepository.UpdateNoTrackingAsync(characteristicValueIntEntity);
             }
 
             foreach (var productCharacteristicStringDto in item.ProductCharacteristicsString)
             {
-                var characteristicValueStringDto =
-                    await _characteristicValueStringService
-                        .GetByValueStringAndCharacteristicIdAsync(
-                            productCharacteristicStringDto.CharacteristicValueString,
-                            productCharacteristicStringDto.Id);
+                var characteristicValueStringEntity =
+                    await _characteristicValueStringRepository.GetByValueStringAndCharacteristicIdAsync(
+                        productCharacteristicStringDto.CharacteristicValueString,
+                        productCharacteristicStringDto.Id);
 
-                if (characteristicValueStringDto == null)
+                if (characteristicValueStringEntity == null)
                 {
-                    var characteristicValueStringDtoNew = new CharacteristicValueStringDto
+                    var characteristicValueStringEntityNew = new CharacteristicValueStringEntity
                     {
                         ValueString = productCharacteristicStringDto.CharacteristicValueString,
                         CategoryCharacteristicStringId = productCharacteristicStringDto.Id
                     };
 
-                    var characteristicWithUpdatedId = await _characteristicValueStringService
-                        .CreateAsync(characteristicValueStringDtoNew);
+                    characteristicValueStringEntityNew.Products.Add(productEntity);
 
-                    var characteristicValueStringEntity = characteristicWithUpdatedId.Adapt<CharacteristicValueStringEntity>();
+                    await _characteristicValueStringRepository
+                        .CreateAsync(characteristicValueStringEntityNew);
 
-                    productEntity.CategoryCharacteristicsString.Add(characteristicValueStringEntity);
+                    continue;
                 }
 
-                var characteristicValueStringEntity2 = characteristicValueStringDto.Adapt<CharacteristicValueStringEntity>();
-
-                productEntity.CategoryCharacteristicsString.Add(characteristicValueStringEntity2);
+                characteristicValueStringEntity.Products.Add(productEntity);
+                await _characteristicValueStringRepository.UpdateNoTrackingAsync(characteristicValueStringEntity);
             }
-
-            var productEntityWithUpdatedId = await _productRepository.CreateAsync(productEntity);
-
-            item.Id = productEntityWithUpdatedId.Id;
 
             return item;
         }
@@ -269,7 +285,7 @@ namespace ComputerStore.BLL.Services
                 throw new ValidationException(validationResult.Errors);
             }
 
-            ProductEntity productEntity = await _productRepository.GetByIdAsync(item.Id);
+            ProductEntity productEntity = await _productRepository.GetByIdWithAllCharacteristicsAsync(item.Id);
 
             if (productEntity == null)
             {
@@ -283,89 +299,95 @@ namespace ComputerStore.BLL.Services
 
             foreach (var productCharacteristicDoubleDto in item.ProductCharacteristicsDouble)
             {
-                var characteristicValueDoubleDto =
-                    await _characteristicValueDoubleService
-                        .GetByValueDoubleAndCharacteristicIdAsync(
-                            productCharacteristicDoubleDto.CharacteristicValueDouble,
-                            productCharacteristicDoubleDto.Id);
+                var characteristicValueDoubleEntity = await _characteristicValueDoubleRepository
+                    .GetByValueDoubleAndCharacteristicIdAsync(
+                        productCharacteristicDoubleDto.CharacteristicValueDouble,
+                        productCharacteristicDoubleDto.Id);
 
-                if (characteristicValueDoubleDto == null)
+                if (characteristicValueDoubleEntity == null)
                 {
-                    var characteristicValueDoubleDtoNew = new CharacteristicValueDoubleDto
+                    var characteristicValueDoubleEntityNew = new CharacteristicValueDoubleEntity
                     {
                         ValueDouble = productCharacteristicDoubleDto.CharacteristicValueDouble,
                         CategoryCharacteristicDoubleId = productCharacteristicDoubleDto.Id
                     };
 
-                    var characteristicWithUpdatedId = await _characteristicValueDoubleService
-                        .CreateAsync(characteristicValueDoubleDtoNew);
+                    characteristicValueDoubleEntityNew.Products.Add(productEntity);
 
-                    var characteristicValueDoubleEntity = characteristicWithUpdatedId.Adapt<CharacteristicValueDoubleEntity>();
+                    await _characteristicValueDoubleRepository
+                        .CreateAsync(characteristicValueDoubleEntityNew);
 
-                    productEntity.CategoryCharacteristicsDouble.Add(characteristicValueDoubleEntity);
+                    continue;
                 }
 
-                var characteristicValueDoubleEntity2 = characteristicValueDoubleDto.Adapt<CharacteristicValueDoubleEntity>();
-
-                productEntity.CategoryCharacteristicsDouble.Add(characteristicValueDoubleEntity2);
+                if (productEntity.CategoryCharacteristicsDouble
+                    .All(x => x.Id != characteristicValueDoubleEntity.Id))
+                {
+                    characteristicValueDoubleEntity.Products.Add(productEntity);
+                    await _characteristicValueDoubleRepository.UpdateNoTrackingAsync(characteristicValueDoubleEntity);
+                }
             }
 
             foreach (var productCharacteristicIntDto in item.ProductCharacteristicsInt)
             {
-                var characteristicValueIntDto =
-                    await _characteristicValueIntService
-                        .GetByValueIntAndCharacteristicIdAsync(
-                            productCharacteristicIntDto.CharacteristicValueInt,
-                            productCharacteristicIntDto.Id);
+                var characteristicValueIntEntity = await _characteristicValueIntRepository
+                    .GetByValueIntAndCharacteristicIdAsync(
+                        productCharacteristicIntDto.CharacteristicValueInt,
+                        productCharacteristicIntDto.Id);
 
-                if (characteristicValueIntDto == null)
+                if (characteristicValueIntEntity == null)
                 {
-                    var characteristicValueIntDtoNew = new CharacteristicValueIntDto
+                    var characteristicValueIntEntityNew = new CharacteristicValueIntEntity
                     {
                         ValueInt = productCharacteristicIntDto.CharacteristicValueInt,
                         CategoryCharacteristicIntId = productCharacteristicIntDto.Id
                     };
 
-                    var characteristicWithUpdatedId = await _characteristicValueIntService
-                        .CreateAsync(characteristicValueIntDtoNew);
+                    characteristicValueIntEntityNew.Products.Add(productEntity);
 
-                    var characteristicValueIntEntity = characteristicWithUpdatedId.Adapt<CharacteristicValueIntEntity>();
+                    await _characteristicValueIntRepository
+                        .CreateAsync(characteristicValueIntEntityNew);
 
-                    productEntity.CategoryCharacteristicsInt.Add(characteristicValueIntEntity);
+                    continue;
                 }
 
-                var characteristicValueIntEntity2 = characteristicValueIntDto.Adapt<CharacteristicValueIntEntity>();
-
-                productEntity.CategoryCharacteristicsInt.Add(characteristicValueIntEntity2);
+                if (productEntity.CategoryCharacteristicsInt
+                    .All(x => x.Id != characteristicValueIntEntity.Id))
+                {
+                    characteristicValueIntEntity.Products.Add(productEntity);
+                    await _characteristicValueIntRepository.UpdateNoTrackingAsync(characteristicValueIntEntity);
+                }
             }
 
             foreach (var productCharacteristicStringDto in item.ProductCharacteristicsString)
             {
-                var characteristicValueStringDto =
-                    await _characteristicValueStringService
-                        .GetByValueStringAndCharacteristicIdAsync(
-                            productCharacteristicStringDto.CharacteristicValueString,
-                            productCharacteristicStringDto.Id);
+                var characteristicValueStringEntity = await _characteristicValueStringRepository
+                    .GetByValueStringAndCharacteristicIdAsync(
+                        productCharacteristicStringDto.CharacteristicValueString,
+                        productCharacteristicStringDto.Id);
 
-                if (characteristicValueStringDto == null)
+                if (characteristicValueStringEntity == null)
                 {
-                    var characteristicValueStringDtoNew = new CharacteristicValueStringDto
+                    var characteristicValueStringEntityNew = new CharacteristicValueStringEntity
                     {
                         ValueString = productCharacteristicStringDto.CharacteristicValueString,
                         CategoryCharacteristicStringId = productCharacteristicStringDto.Id
                     };
 
-                    var characteristicWithUpdatedId = await _characteristicValueStringService
-                        .CreateAsync(characteristicValueStringDtoNew);
+                    characteristicValueStringEntityNew.Products.Add(productEntity);
 
-                    var characteristicValueStringEntity = characteristicWithUpdatedId.Adapt<CharacteristicValueStringEntity>();
+                    await _characteristicValueStringRepository
+                        .CreateAsync(characteristicValueStringEntityNew);
 
-                    productEntity.CategoryCharacteristicsString.Add(characteristicValueStringEntity);
+                    continue;
                 }
 
-                var characteristicValueStringEntity2 = characteristicValueStringDto.Adapt<CharacteristicValueStringEntity>();
-
-                productEntity.CategoryCharacteristicsString.Add(characteristicValueStringEntity2);
+                if (productEntity.CategoryCharacteristicsString
+                    .All(x => x.Id != characteristicValueStringEntity.Id))
+                {
+                    characteristicValueStringEntity.Products.Add(productEntity);
+                    await _characteristicValueStringRepository.UpdateNoTrackingAsync(characteristicValueStringEntity);
+                }
             }
 
             await _productRepository.UpdateAsync(productEntity);

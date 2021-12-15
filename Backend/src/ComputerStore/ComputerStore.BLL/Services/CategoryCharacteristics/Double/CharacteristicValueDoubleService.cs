@@ -84,7 +84,8 @@ namespace ComputerStore.BLL.Services.CategoryCharacteristics.Double
         {
             var entityResult = await _repository.GetAll()
                 .FirstOrDefaultAsync(x =>
-                    Math.Abs(x.ValueDouble - value) <= 0.001 &&
+                    //Math.Abs(x.ValueDouble - value) <= 0.001 &&
+                    (x.ValueDouble > value ? x.ValueDouble - value : value - x.ValueDouble) <= 0.001 &&
                     x.CategoryCharacteristicDoubleId == id);
 
             return entityResult?.Adapt<CharacteristicValueDoubleDto>();

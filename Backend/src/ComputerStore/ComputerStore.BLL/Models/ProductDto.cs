@@ -12,9 +12,9 @@ namespace ComputerStore.BLL.Models
         public string Description { get; set; }
         public int QuantityInStorage { get; set; }
         public int ProductCategoryId { get; set; }
-        public List<ProductCharacteristicDoubleDto> ProductCharacteristicsDouble { get; set; }
-        public List<ProductCharacteristicIntDto> ProductCharacteristicsInt { get; set; }
-        public List<ProductCharacteristicStringDto> ProductCharacteristicsString { get; set; }
+        public List<ProductCharacteristicDoubleDto> ProductCharacteristicsDouble { get; set; } = new();
+        public List<ProductCharacteristicIntDto> ProductCharacteristicsInt { get; set; } = new();
+        public List<ProductCharacteristicStringDto> ProductCharacteristicsString { get; set; } = new();
         public int Id { get; set; }
     }
 }

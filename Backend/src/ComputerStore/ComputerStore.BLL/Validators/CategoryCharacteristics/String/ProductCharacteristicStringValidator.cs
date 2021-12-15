@@ -3,9 +3,9 @@ using FluentValidation;
 
 namespace ComputerStore.BLL.Validators.CategoryCharacteristics.String
 {
-    public class CategoryCharacteristicStringValidator : AbstractValidator<CategoryCharacteristicStringDto>
+    public class ProductCharacteristicStringValidator : AbstractValidator<ProductCharacteristicStringDto>
     {
-        public CategoryCharacteristicStringValidator()
+        public ProductCharacteristicStringValidator()
         {
             CascadeMode = CascadeMode.Stop;
 
@@ -17,6 +17,11 @@ namespace ComputerStore.BLL.Validators.CategoryCharacteristics.String
                     .MaximumLength(30);
 
                 RuleFor(x => x.Dimension)
+                    .NotEmpty()
+                    .MinimumLength(3)
+                    .MaximumLength(30);
+
+                RuleFor(x => x.CharacteristicValueString)
                     .NotEmpty()
                     .MinimumLength(3)
                     .MaximumLength(30);

@@ -3,9 +3,9 @@ using FluentValidation;
 
 namespace ComputerStore.BLL.Validators.CategoryCharacteristics.Int
 {
-    public class CategoryCharacteristicIntValidator : AbstractValidator<CategoryCharacteristicIntDto>
+    public class ProductCharacteristicIntValidator : AbstractValidator<ProductCharacteristicIntDto>
     {
-        public CategoryCharacteristicIntValidator()
+        public ProductCharacteristicIntValidator()
         {
             CascadeMode = CascadeMode.Stop;
 
@@ -20,6 +20,10 @@ namespace ComputerStore.BLL.Validators.CategoryCharacteristics.Int
                     .NotEmpty()
                     .MinimumLength(3)
                     .MaximumLength(30);
+
+                RuleFor(x => x.CharacteristicValueInt)
+                    .GreaterThanOrEqualTo(0)
+                    .WithMessage("The ValueInt must be greater than or equal to 0");
             });
         }
     }

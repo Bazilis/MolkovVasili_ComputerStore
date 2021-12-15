@@ -3,9 +3,9 @@ using FluentValidation;
 
 namespace ComputerStore.BLL.Validators.CategoryCharacteristics.Double
 {
-    public class CategoryCharacteristicDoubleValidator : AbstractValidator<CategoryCharacteristicDoubleDto>
+    public class ProductCharacteristicDoubleValidator : AbstractValidator<ProductCharacteristicDoubleDto>
     {
-        public CategoryCharacteristicDoubleValidator()
+        public ProductCharacteristicDoubleValidator()
         {
             CascadeMode = CascadeMode.Stop;
 
@@ -20,6 +20,10 @@ namespace ComputerStore.BLL.Validators.CategoryCharacteristics.Double
                     .NotEmpty()
                     .MinimumLength(3)
                     .MaximumLength(30);
+
+                RuleFor(x => x.CharacteristicValueDouble)
+                    .GreaterThanOrEqualTo(0)
+                    .WithMessage("The ValueDouble must be greater than or equal to 0");
             });
         }
     }

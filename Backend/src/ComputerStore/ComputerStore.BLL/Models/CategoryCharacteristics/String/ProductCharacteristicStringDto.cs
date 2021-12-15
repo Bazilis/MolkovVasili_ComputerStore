@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace ComputerStore.BLL.Models.CategoryCharacteristics.String
+﻿namespace ComputerStore.BLL.Models.CategoryCharacteristics.String
 {
     public class ProductCharacteristicStringDto
     {

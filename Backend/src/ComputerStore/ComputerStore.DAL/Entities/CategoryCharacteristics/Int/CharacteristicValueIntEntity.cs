@@ -7,7 +7,7 @@ namespace ComputerStore.DAL.Entities.CategoryCharacteristics.Int
     {
         public int ValueInt { get; set; }
         public int CategoryCharacteristicIntId { get; set; }
-        public List<ProductEntity> Products { get; set; }
+        public List<ProductEntity> Products { get; set; } = new();
         public int Id { get; set; }
     }
 }

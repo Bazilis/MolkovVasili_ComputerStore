@@ -9,7 +9,7 @@ namespace ComputerStore.DAL.Entities.CategoryCharacteristics.String
         [Required]
         public string ValueString { get; set; }
         public int CategoryCharacteristicStringId { get; set; }
-        public List<ProductEntity> Products { get; set; }
+        public List<ProductEntity> Products { get; set; } = new();
         public int Id { get; set; }
     }
 }
