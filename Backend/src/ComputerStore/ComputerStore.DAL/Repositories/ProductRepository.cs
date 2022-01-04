@@ -23,5 +23,14 @@ namespace ComputerStore.DAL.Repositories
                 .Include(p => p.CategoryCharacteristicsString)
                 .FirstOrDefaultAsync(e => e.Id == productId);
         }
+
+        public async Task<ProductEntity> GetAllWithAllCharacteristicsAsync(int productId)
+        {
+            return await _context.Set<ProductEntity>()
+                .Include(p => p.CategoryCharacteristicsDouble)
+                .Include(p => p.CategoryCharacteristicsInt)
+                .Include(p => p.CategoryCharacteristicsString)
+                .FirstOrDefaultAsync(e => e.Id == productId);
+        }
     }
 }

@@ -2,6 +2,8 @@
 using ComputerStore.DAL.Entities.CategoryCharacteristics.Double;
 using ComputerStore.DAL.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ComputerStore.DAL.Repositories
@@ -15,7 +17,8 @@ namespace ComputerStore.DAL.Repositories
             _context = context;
         }
 
-        public async Task<CharacteristicValueDoubleEntity> GetByValueDoubleAndCharacteristicIdAsync(double valueDouble, int characteristicId)
+        public async Task<CharacteristicValueDoubleEntity> GetByValueDoubleAndCharacteristicIdAsync(
+            double valueDouble, int characteristicId)
         {
             var entityResult = await _context.Set<CharacteristicValueDoubleEntity>()
                 .Include(c => c.Products)
@@ -23,6 +26,22 @@ namespace ComputerStore.DAL.Repositories
                     //Math.Abs(x.ValueDouble - value) <= 0.001 &&
                     (x.ValueDouble > valueDouble ? x.ValueDouble - valueDouble : valueDouble - x.ValueDouble) <= 0.001 &&
                     x.CategoryCharacteristicDoubleId == characteristicId);
+
+            return entityResult;
+        }
+
+        public async Task<IEnumerable<int>> GetAllProductsIdsByMinMaxValueDoubleAndCharacteristicIdAsync(
+            int characteristicId, double? minVal, double? maxVal)
+        {
+            var entityResult = await _context.Set<CharacteristicValueDoubleEntity>()
+                .Include(c => c.Products)
+                .Where(x =>
+                    x.CategoryCharacteristicDoubleId == characteristicId &&
+                    x.ValueDouble >= minVal &&
+                    x.ValueDouble <= maxVal)
+                .SelectMany(с => с.Products.Select(p => p.Id))
+                .Distinct()
+                .ToArrayAsync();
 
             return entityResult;
         }

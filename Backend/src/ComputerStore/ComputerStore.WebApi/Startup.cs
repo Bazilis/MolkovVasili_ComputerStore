@@ -50,7 +50,10 @@ namespace ComputerStore.WebApi
         {
             services.AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<ProductValidator>());
 
-            services.AddControllers();
+            services.AddControllers(options =>
+            {
+                //options.ModelBinderProviders.Insert(0, new FilterModelBinderProvider());
+            });
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ComputerStore.WebApi", Version = "v1" });

@@ -1,9 +1,9 @@
 ﻿using ComputerStore.BLL.Interfaces;
 using ComputerStore.BLL.Models;
+using ComputerStore.BLL.Models.FilterModels;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace ComputerStore.WebApi.Controllers
@@ -21,9 +21,15 @@ namespace ComputerStore.WebApi.Controllers
 
         // GET: api/<ProductController>
         [HttpGet]
-        public IEnumerable<string> Get()
+        public async Task<ActionResult<IEnumerable<ProductDto>>> Get(
+            [FromQuery] DoubleFilterModel[] dob,
+            [FromQuery] IntFilterModel[] num,
+            [FromQuery] StringFilterModel[] str)
         {
-            return new string[] { "value1", "value2" };
+            var result = await _productService
+                .GetAllProductsByQueryParamsAsync(dob, num, str);
+
+            return Ok(result);
         }
 
         // GET api/<ProductController>/5
@@ -35,9 +41,13 @@ namespace ComputerStore.WebApi.Controllers
 
         // POST api/<ProductController>
         [HttpPost]
-        public async Task<ActionResult<ProductDto>> Post([FromBody] ProductDto product)
+        public async Task<IActionResult> Post([FromBody] ProductDto product)
         {
-            return await _productService.CreateAsync(product);
+            var result = await _productService.CreateAsync(product);
+
+            var uri = new Uri($"{Request.Path.Value}/{result.Id}".ToLower(), UriKind.Relative);
+
+            return Created(uri, result);
         }
 
         // PUT api/<ProductController>/5

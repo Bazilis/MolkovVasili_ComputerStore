@@ -6,6 +6,7 @@ using ComputerStore.BLL.Models;
 using ComputerStore.BLL.Models.CategoryCharacteristics.Double;
 using ComputerStore.BLL.Models.CategoryCharacteristics.Int;
 using ComputerStore.BLL.Models.CategoryCharacteristics.String;
+using ComputerStore.BLL.Models.FilterModels;
 using ComputerStore.DAL.Entities;
 using ComputerStore.DAL.Entities.CategoryCharacteristics.Double;
 using ComputerStore.DAL.Entities.CategoryCharacteristics.Int;
@@ -66,6 +67,56 @@ namespace ComputerStore.BLL.Services
             }
 
             return entitiesResult.Adapt<IEnumerable<ProductDto>>();
+        }
+
+        public async Task<IEnumerable<ProductDto>> GetAllProductsByQueryParamsAsync(
+            DoubleFilterModel[] doubleFilterArray,
+            IntFilterModel[] intFilterArray,
+            StringFilterModel[] stringFilterArray)
+        {
+            var productsIdsList = new List<int>();
+
+            foreach (var doubleFilterModel in doubleFilterArray)
+            {
+                var resultDouble = await _characteristicValueDoubleRepository
+                    .GetAllProductsIdsByMinMaxValueDoubleAndCharacteristicIdAsync(
+                        doubleFilterModel.CatId, doubleFilterModel.MinVal, doubleFilterModel.MaxVal);
+                
+                productsIdsList.AddRange(resultDouble);
+            }
+
+            foreach (var intFilterModel in intFilterArray)
+            {
+                var resultInt = await _characteristicValueIntRepository
+                    .GetAllProductsIdsByMinMaxValueIntAndCharacteristicIdAsync(
+                        intFilterModel.CatId, intFilterModel.MinVal, intFilterModel.MaxVal);
+
+                productsIdsList.AddRange(resultInt);
+            }
+
+            foreach (var stringFilterModel in stringFilterArray)
+            {
+                var resultString = await _characteristicValueStringRepository
+                    .GetAllProductsIdsByValueStringAndCharacteristicIdAsync(
+                        stringFilterModel.CatId, stringFilterModel.StrVal);
+
+                productsIdsList.AddRange(resultString);
+            }
+
+            var distinctProductsIdsList = productsIdsList.OrderBy(i => i).Distinct();
+
+            var productsList = await _productRepository
+                .GetAllNoTracking()
+                .Where(p => distinctProductsIdsList.Contains(p.Id))
+                .ToArrayAsync();
+
+            if (productsList == null)
+            {
+                throw new NullReferenceException("There is no any Product entities " +
+                                                 "with such filter parameters in Database");
+            }
+
+            return productsList.Adapt<IEnumerable<ProductDto>>();
         }
 
         public async Task<IEnumerable<ProductDto>> GetAllAsync()
