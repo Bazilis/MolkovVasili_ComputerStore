@@ -2,13 +2,12 @@
 using ComputerStore.DAL.Entities.CategoryCharacteristics.Double;
 using ComputerStore.DAL.Entities.CategoryCharacteristics.Int;
 using ComputerStore.DAL.Entities.CategoryCharacteristics.String;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace ComputerStore.DAL.EF
 {
-    public sealed class StoreDbContext : IdentityDbContext<IdentityUser>
+    public sealed class StoreDbContext : IdentityDbContext<UserEntity>
     {
         public StoreDbContext(DbContextOptions<StoreDbContext> optionsBuilder)
             : base(optionsBuilder)
@@ -37,19 +36,19 @@ namespace ComputerStore.DAL.EF
 
             modelBuilder.Entity<CategoryCharacteristicDoubleEntity>()
                 .HasOne<ProductCategoryEntity>()
-                .WithMany()
+                .WithMany(pc => pc.CategoryCharacteristicsDouble)
                 .HasForeignKey(characteristic => characteristic.ProductCategoryId)
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<CategoryCharacteristicIntEntity>()
                 .HasOne<ProductCategoryEntity>()
-                .WithMany()
+                .WithMany(pc => pc.CategoryCharacteristicsInt)
                 .HasForeignKey(characteristic => characteristic.ProductCategoryId)
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<CategoryCharacteristicStringEntity>()
                 .HasOne<ProductCategoryEntity>()
-                .WithMany()
+                .WithMany(pc => pc.CategoryCharacteristicsString)
                 .HasForeignKey(characteristic => characteristic.ProductCategoryId)
                 .OnDelete(DeleteBehavior.NoAction);
 
@@ -57,50 +56,50 @@ namespace ComputerStore.DAL.EF
 
             modelBuilder.Entity<CharacteristicValueDoubleEntity>()
                 .HasOne<CategoryCharacteristicDoubleEntity>()
-                .WithMany()
+                .WithMany(c => c.CharacteristicValuesDouble)
                 .HasForeignKey(value => value.CategoryCharacteristicDoubleId)
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<CharacteristicValueIntEntity>()
                 .HasOne<CategoryCharacteristicIntEntity>()
-                .WithMany()
+                .WithMany(c => c.CharacteristicValuesInt)
                 .HasForeignKey(value => value.CategoryCharacteristicIntId)
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<CharacteristicValueStringEntity>()
                 .HasOne<CategoryCharacteristicStringEntity>()
-                .WithMany()
+                .WithMany(c => c.CharacteristicValuesString)
                 .HasForeignKey(value => value.CategoryCharacteristicStringId)
                 .OnDelete(DeleteBehavior.NoAction);
 
             //-------------------------------------------------------------------------------------------------
 
-            modelBuilder.Entity<CharacteristicValueDoubleEntity>()
-                .HasMany(c => c.Products)
-                .WithMany(p => p.CategoryCharacteristicsDouble)
+            modelBuilder.Entity<ProductEntity>()
+                .HasMany(p => p.CategoryCharacteristicsDouble)
+                .WithMany(c => c.Products)
                 .UsingEntity(e => e.ToTable("ProductsValuesDouble"));
 
-            modelBuilder.Entity<CharacteristicValueIntEntity>()
-                .HasMany(c => c.Products)
-                .WithMany(p => p.CategoryCharacteristicsInt)
+            modelBuilder.Entity<ProductEntity>()
+                .HasMany(p => p.CategoryCharacteristicsInt)
+                .WithMany(c => c.Products)
                 .UsingEntity(e => e.ToTable("ProductsValuesInt"));
 
-            modelBuilder.Entity<CharacteristicValueStringEntity>()
-                .HasMany(c => c.Products)
-                .WithMany(p => p.CategoryCharacteristicsString)
+            modelBuilder.Entity<ProductEntity>()
+                .HasMany(p => p.CategoryCharacteristicsString)
+                .WithMany(c => c.Products)
                 .UsingEntity(e => e.ToTable("ProductsValuesString"));
 
             //-------------------------------------------------------------------------------------------------
 
             modelBuilder.Entity<OrderEntity>()
-                .HasOne<IdentityUser>()
-                .WithMany()
+                .HasOne<UserEntity>()
+                .WithMany(u => u.Orders)
                 .HasForeignKey(order => order.UserId)
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<OrderEntity>()
                 .HasOne<ProductEntity>()
-                .WithMany()
+                .WithMany(p => p.Orders)
                 .HasForeignKey(order => order.ProductId)
                 .OnDelete(DeleteBehavior.NoAction);
 

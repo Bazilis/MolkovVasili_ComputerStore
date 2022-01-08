@@ -1,6 +1,7 @@
 ﻿using ComputerStore.BLL.Interfaces;
 using ComputerStore.BLL.Models;
 using ComputerStore.BLL.Models.FilterModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,7 @@ namespace ComputerStore.WebApi.Controllers
 
         // GET: api/<ProductController>
         [HttpGet]
+        [Produces("application/json")]
         public async Task<ActionResult<IEnumerable<ProductDto>>> Get(
             [FromQuery] DoubleFilterModel[] dob,
             [FromQuery] IntFilterModel[] num,
@@ -33,7 +35,9 @@ namespace ComputerStore.WebApi.Controllers
         }
 
         // GET api/<ProductController>/5
+        [Authorize]
         [HttpGet("{id}")]
+        [Produces("application/json")]
         public async Task<ActionResult<ProductDto>> Get(int id)
         {
             return await _productService.GetByIdWithAllCharacteristicsAsync(id);
@@ -41,6 +45,7 @@ namespace ComputerStore.WebApi.Controllers
 
         // POST api/<ProductController>
         [HttpPost]
+        [Produces("application/json")]
         public async Task<IActionResult> Post([FromBody] ProductDto product)
         {
             var result = await _productService.CreateAsync(product);
@@ -52,6 +57,7 @@ namespace ComputerStore.WebApi.Controllers
 
         // PUT api/<ProductController>/5
         [HttpPut]
+        [Produces("application/json")]
         public async Task Put([FromBody] ProductDto product)
         {
             await _productService.UpdateAsync(product);
@@ -59,6 +65,7 @@ namespace ComputerStore.WebApi.Controllers
 
         // DELETE api/<ProductController>/5
         [HttpDelete("{id}")]
+        [Produces("application/json")]
         public void Delete(int id)
         {
         }

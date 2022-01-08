@@ -23,7 +23,6 @@ namespace ComputerStore.DAL.Repositories
             var entityResult = await _context.Set<CharacteristicValueDoubleEntity>()
                 .Include(c => c.Products)
                 .FirstOrDefaultAsync(x =>
-                    //Math.Abs(x.ValueDouble - value) <= 0.001 &&
                     (x.ValueDouble > valueDouble ? x.ValueDouble - valueDouble : valueDouble - x.ValueDouble) <= 0.001 &&
                     x.CategoryCharacteristicDoubleId == characteristicId);
 

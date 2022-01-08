@@ -1,28 +1,8 @@
-using ComputerStore.BLL.Interfaces;
-using ComputerStore.BLL.Interfaces.CategoryCharacteristics.Double;
-using ComputerStore.BLL.Interfaces.CategoryCharacteristics.Int;
-using ComputerStore.BLL.Interfaces.CategoryCharacteristics.String;
-using ComputerStore.BLL.Models;
-using ComputerStore.BLL.Models.CategoryCharacteristics.Double;
-using ComputerStore.BLL.Models.CategoryCharacteristics.Int;
-using ComputerStore.BLL.Models.CategoryCharacteristics.String;
-using ComputerStore.BLL.Services;
-using ComputerStore.BLL.Services.CategoryCharacteristics.Double;
-using ComputerStore.BLL.Services.CategoryCharacteristics.Int;
-using ComputerStore.BLL.Services.CategoryCharacteristics.String;
 using ComputerStore.BLL.Validators;
-using ComputerStore.BLL.Validators.CategoryCharacteristics.Double;
-using ComputerStore.BLL.Validators.CategoryCharacteristics.Int;
-using ComputerStore.BLL.Validators.CategoryCharacteristics.String;
 using ComputerStore.DAL.EF;
-using ComputerStore.DAL.Entities;
-using ComputerStore.DAL.Interfaces;
-using ComputerStore.DAL.Repositories;
-using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,6 +13,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ComputerStore.BLL.Extensions;
+using Microsoft.AspNetCore.Identity;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using ComputerStore.DAL.Entities;
 
 namespace ComputerStore.WebApi
 {
@@ -59,30 +46,32 @@ namespace ComputerStore.WebApi
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ComputerStore.WebApi", Version = "v1" });
             });
 
+            services.AddBllServices();
+
             services.AddDbContext<StoreDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-            services.AddScoped<IProductRepository, ProductRepository>();
-            services.AddScoped<ICharacteristicValueDoubleRepository, CharacteristicValueDoubleRepository>();
-            services.AddScoped<ICharacteristicValueIntRepository, CharacteristicValueIntRepository>();
-            services.AddScoped<ICharacteristicValueStringRepository, CharacteristicValueStringRepository>();
-            services.AddScoped<ICategoryCharacteristicDoubleService, CategoryCharacteristicDoubleService>();
-            services.AddScoped<ICategoryCharacteristicIntService, CategoryCharacteristicIntService>();
-            services.AddScoped<ICategoryCharacteristicStringService, CategoryCharacteristicStringService>();
-            services.AddScoped<ICharacteristicValueDoubleService, CharacteristicValueDoubleService>();
-            services.AddScoped<ICharacteristicValueIntService, CharacteristicValueIntService>();
-            services.AddScoped<ICharacteristicValueStringService, CharacteristicValueStringService>();
+            services.AddIdentity<UserEntity, IdentityRole>()
+                .AddEntityFrameworkStores<StoreDbContext>()
+                .AddDefaultTokenProviders();
 
-            services.AddScoped<IValidator<CategoryCharacteristicDoubleDto>, CategoryCharacteristicDoubleValidator>();
-            services.AddScoped<IValidator<CategoryCharacteristicIntDto>, CategoryCharacteristicIntValidator>();
-            services.AddScoped<IValidator<CategoryCharacteristicStringDto>, CategoryCharacteristicStringValidator>();
-            services.AddScoped<IValidator<CharacteristicValueDoubleDto>, CharacteristicValueDoubleValidator>();
-            services.AddScoped<IValidator<CharacteristicValueIntDto>, CharacteristicValueIntValidator>();
-            services.AddScoped<IValidator<CharacteristicValueStringDto>, CharacteristicValueStringValidator>();
-            services.AddScoped<IValidator<ProductDto>, ProductValidator>();
-            services.AddScoped<IProductService, ProductService>();
-
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidIssuer = Configuration["JwtIssuer"],
+                    ValidAudience = Configuration["JwtIssuer"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtKey"]))
+                };
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -97,6 +86,8 @@ namespace ComputerStore.WebApi
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ComputerStore.WebApi v1"));
 
             app.UseRouting();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

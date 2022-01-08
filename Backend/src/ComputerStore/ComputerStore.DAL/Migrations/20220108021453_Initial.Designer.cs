@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ComputerStore.DAL.Migrations
 {
     [DbContext(typeof(StoreDbContext))]
-    [Migration("20211211005316_Initial")]
+    [Migration("20220108021453_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -274,6 +274,77 @@ namespace ComputerStore.DAL.Migrations
                     b.ToTable("Products");
                 });
 
+            modelBuilder.Entity("ComputerStore.DAL.Entities.UserEntity", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("FirstName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex")
+                        .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.ToTable("AspNetUsers");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -323,71 +394,6 @@ namespace ComputerStore.DAL.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetRoleClaims");
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUser", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("AccessFailedCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("NormalizedEmail")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("NormalizedUserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("SecurityStamp")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("UserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedEmail")
-                        .HasDatabaseName("EmailIndex");
-
-                    b.HasIndex("NormalizedUserName")
-                        .IsUnique()
-                        .HasDatabaseName("UserNameIndex")
-                        .HasFilter("[NormalizedUserName] IS NOT NULL");
-
-                    b.ToTable("AspNetUsers");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -518,7 +524,7 @@ namespace ComputerStore.DAL.Migrations
             modelBuilder.Entity("ComputerStore.DAL.Entities.CategoryCharacteristics.Double.CategoryCharacteristicDoubleEntity", b =>
                 {
                     b.HasOne("ComputerStore.DAL.Entities.ProductCategoryEntity", null)
-                        .WithMany()
+                        .WithMany("CategoryCharacteristicsDouble")
                         .HasForeignKey("ProductCategoryId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -527,7 +533,7 @@ namespace ComputerStore.DAL.Migrations
             modelBuilder.Entity("ComputerStore.DAL.Entities.CategoryCharacteristics.Double.CharacteristicValueDoubleEntity", b =>
                 {
                     b.HasOne("ComputerStore.DAL.Entities.CategoryCharacteristics.Double.CategoryCharacteristicDoubleEntity", null)
-                        .WithMany()
+                        .WithMany("CharacteristicValuesDouble")
                         .HasForeignKey("CategoryCharacteristicDoubleId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -536,7 +542,7 @@ namespace ComputerStore.DAL.Migrations
             modelBuilder.Entity("ComputerStore.DAL.Entities.CategoryCharacteristics.Int.CategoryCharacteristicIntEntity", b =>
                 {
                     b.HasOne("ComputerStore.DAL.Entities.ProductCategoryEntity", null)
-                        .WithMany()
+                        .WithMany("CategoryCharacteristicsInt")
                         .HasForeignKey("ProductCategoryId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -545,7 +551,7 @@ namespace ComputerStore.DAL.Migrations
             modelBuilder.Entity("ComputerStore.DAL.Entities.CategoryCharacteristics.Int.CharacteristicValueIntEntity", b =>
                 {
                     b.HasOne("ComputerStore.DAL.Entities.CategoryCharacteristics.Int.CategoryCharacteristicIntEntity", null)
-                        .WithMany()
+                        .WithMany("CharacteristicValuesInt")
                         .HasForeignKey("CategoryCharacteristicIntId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -554,7 +560,7 @@ namespace ComputerStore.DAL.Migrations
             modelBuilder.Entity("ComputerStore.DAL.Entities.CategoryCharacteristics.String.CategoryCharacteristicStringEntity", b =>
                 {
                     b.HasOne("ComputerStore.DAL.Entities.ProductCategoryEntity", null)
-                        .WithMany()
+                        .WithMany("CategoryCharacteristicsString")
                         .HasForeignKey("ProductCategoryId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -563,7 +569,7 @@ namespace ComputerStore.DAL.Migrations
             modelBuilder.Entity("ComputerStore.DAL.Entities.CategoryCharacteristics.String.CharacteristicValueStringEntity", b =>
                 {
                     b.HasOne("ComputerStore.DAL.Entities.CategoryCharacteristics.String.CategoryCharacteristicStringEntity", null)
-                        .WithMany()
+                        .WithMany("CharacteristicValuesString")
                         .HasForeignKey("CategoryCharacteristicStringId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -572,13 +578,13 @@ namespace ComputerStore.DAL.Migrations
             modelBuilder.Entity("ComputerStore.DAL.Entities.OrderEntity", b =>
                 {
                     b.HasOne("ComputerStore.DAL.Entities.ProductEntity", null)
-                        .WithMany()
+                        .WithMany("Orders")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
-                        .WithMany()
+                    b.HasOne("ComputerStore.DAL.Entities.UserEntity", null)
+                        .WithMany("Orders")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -604,7 +610,7 @@ namespace ComputerStore.DAL.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                    b.HasOne("ComputerStore.DAL.Entities.UserEntity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -613,7 +619,7 @@ namespace ComputerStore.DAL.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                    b.HasOne("ComputerStore.DAL.Entities.UserEntity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -628,7 +634,7 @@ namespace ComputerStore.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                    b.HasOne("ComputerStore.DAL.Entities.UserEntity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -637,11 +643,45 @@ namespace ComputerStore.DAL.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                    b.HasOne("ComputerStore.DAL.Entities.UserEntity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ComputerStore.DAL.Entities.CategoryCharacteristics.Double.CategoryCharacteristicDoubleEntity", b =>
+                {
+                    b.Navigation("CharacteristicValuesDouble");
+                });
+
+            modelBuilder.Entity("ComputerStore.DAL.Entities.CategoryCharacteristics.Int.CategoryCharacteristicIntEntity", b =>
+                {
+                    b.Navigation("CharacteristicValuesInt");
+                });
+
+            modelBuilder.Entity("ComputerStore.DAL.Entities.CategoryCharacteristics.String.CategoryCharacteristicStringEntity", b =>
+                {
+                    b.Navigation("CharacteristicValuesString");
+                });
+
+            modelBuilder.Entity("ComputerStore.DAL.Entities.ProductCategoryEntity", b =>
+                {
+                    b.Navigation("CategoryCharacteristicsDouble");
+
+                    b.Navigation("CategoryCharacteristicsInt");
+
+                    b.Navigation("CategoryCharacteristicsString");
+                });
+
+            modelBuilder.Entity("ComputerStore.DAL.Entities.ProductEntity", b =>
+                {
+                    b.Navigation("Orders");
+                });
+
+            modelBuilder.Entity("ComputerStore.DAL.Entities.UserEntity", b =>
+                {
+                    b.Navigation("Orders");
                 });
 #pragma warning restore 612, 618
         }

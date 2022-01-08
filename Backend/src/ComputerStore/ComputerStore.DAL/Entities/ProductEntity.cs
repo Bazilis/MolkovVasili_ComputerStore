@@ -15,12 +15,14 @@ namespace ComputerStore.DAL.Entities
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal Price { get; set; }
-
         public int QuantityInStorage { get; set; }
-        public int ProductCategoryId { get; set; }
+
         public List<CharacteristicValueDoubleEntity> CategoryCharacteristicsDouble { get; set; } = new();
         public List<CharacteristicValueIntEntity> CategoryCharacteristicsInt { get; set; } = new();
         public List<CharacteristicValueStringEntity> CategoryCharacteristicsString { get; set; } = new();
+        public virtual ICollection<OrderEntity> Orders { get; set; }
+
+        public int ProductCategoryId { get; set; }
         public int Id { get; set; }
     }
 }

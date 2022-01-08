@@ -28,7 +28,7 @@ namespace ComputerStore.BLL.Services.CategoryCharacteristics.Double
             _characteristicValidator = validator;
         }
 
-        public async Task<IEnumerable<CategoryCharacteristicDoubleListDto>> GetAllCategoryCharacteristicsDoubleListByProductCategoryIdAsync(int productCategoryId)
+        public async Task<IEnumerable<CategoryCharacteristicListDoubleDto>> GetAllCategoryCharacteristicsDoubleListByProductCategoryIdAsync(int productCategoryId)
         {
             var categoryCharacteristicDoubleEntitiesList = await _characteristicRepository.GetAll()
                 .Where(ch => ch.ProductCategoryId == productCategoryId)
@@ -41,7 +41,7 @@ namespace ComputerStore.BLL.Services.CategoryCharacteristics.Double
                                                  $"with ProductCategoryId {productCategoryId} in Database");
             }
 
-            var categoryCharacteristicDoubleListDtoList = new List<CategoryCharacteristicDoubleListDto>();
+            var categoryCharacteristicDoubleListDtoList = new List<CategoryCharacteristicListDoubleDto>();
 
             foreach (var categoryCharacteristicDoubleEntity in categoryCharacteristicDoubleEntitiesList)
             {
@@ -75,7 +75,7 @@ namespace ComputerStore.BLL.Services.CategoryCharacteristics.Double
                     characteristicValueDoubleDtoList.Add(characteristicValueDoubleDto);
                 }
 
-                var categoryCharacteristicDoubleListDto = new CategoryCharacteristicDoubleListDto()
+                var categoryCharacteristicDoubleListDto = new CategoryCharacteristicListDoubleDto()
                 {
                     Id = categoryCharacteristicDoubleEntity.Id,
                     Name = categoryCharacteristicDoubleEntity.Name,
